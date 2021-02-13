@@ -43,7 +43,7 @@ or
 employee directory application URL: https://guarded-badlands-93879.herokuapp.com/
 
 
-![Alt Text](https://github.com/melvyn10/employee_directory/blob/main/public/assets/images/image1.png)
+![Alt Text](https://github.com/melvyn10/employee_directory/blob/main/assets/images/image1.png)
 
 
 
