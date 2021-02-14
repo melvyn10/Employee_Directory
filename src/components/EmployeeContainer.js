@@ -1,34 +1,32 @@
 import React, { Component } from "react";
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
-import axios from "axios";
-import API from "../utils/API";
 //import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import "./Employee.css";
+import API from "../utils/API";
 
-export class EmployeeContainer extends Component {
+class EmployeeContainer extends Component {
   state = {
-    getEmployeeData: "",
+    searchName: "",
     employee: [],
+    filteredEmployee: [],
     columns: [ 
       {
         dataField: 'id',
         text: 'Id',
-        filter: textFilter(),
         style: {'white-space' : 'wrap'},
         sort: true
       },
       {
         dataField: 'first_name',
         text: 'First Name',
-        filter: textFilter(),
         style: {'white-space' : 'wrap'},
         sort: true
       },
       {
         dataField: 'last_name',
         text: 'Last Name',
-        filter: textFilter(),
         style: {'white-space' : 'wrap'},
         sort: true
       },
@@ -41,28 +39,24 @@ export class EmployeeContainer extends Component {
       {
         dataField: 'city',
         text: 'City',
-        filter: textFilter(),
         style: {'white-space' : 'wrap'},
         sort: true
       },
       {
         dataField: 'country',
         text: 'Country',
-        filter: textFilter(),
         style: {'white-space' : 'wrap'},
         sort: true
       },
       {
         dataField: 'title',
         text: 'Title',
-        filter: textFilter(),
         style: {'white-space' : 'wrap'},
         sort: true
       },
       {
         dataField: 'gender',
         text: 'Gender',
-        filter: textFilter(),
         style: {'white-space' : 'wrap' },
         sort: true
       }
@@ -70,42 +64,72 @@ export class EmployeeContainer extends Component {
   
   };
 
-  componentDidMount() {
-    this.getEmployeeData();
+  async componentDidMount() {
+    await API.getData()
+    .then(res => {
+        this.setState({employee: JSON.parse(JSON.stringify(res.data))});
+        this.setState({filteredEmployee: JSON.parse(JSON.stringify(res.data))});
+        console.log ("got employee",this.state.employee);
+      })
+    .catch(err => console.log(err));
   }
 
-  getEmployeeData = query => {
-    API.getData()
-      .then(res => {
-        console.log("length: ", Object.keys(res.data).length);
-        console.log("res", res.data);
-        this.setState({employee: JSON.parse(JSON.stringify(res.data))})}
-        )
-      .catch(err => console.log(err));
+  handleInputChange = event => {
+    const name = event.target.name;
+    const value = event.target.value;
+    this.setState({
+      [name]: value
+    });
+    this.searchEmployee(this.state.searchName);
+  };
+
+  // When the form is submitted, search the employee table
+  handleFormSubmit = event => {
+      event.preventDefault();
+      this.searchEmployee(this.state.searchName);
+  };
+
+  searchEmployee = query => {
+    const filteredList = this.state.employee.filter((item) => {
+      let temp = item.first_name.toLowerCase() + item.last_name.toLowerCase()+item.user_name.toLowerCase();
+      return temp.indexOf(query.toLowerCase()) !== -1;
+    })
+    console.log ("filteredList ", filteredList );
+    this.setState({
+      filteredEmployee: filteredList
+    });
+
   };
 
   render() {
-    console.log ("employee data", this.state.employee);
     return (
-
-      <div className="container">  
+      <div className="container">
       <div class="row" className="hdr">
-      <div class="col-sm-12 btn btn-info"> 
-      Employee Table
-      </div>    
-      </div>    
-      <div  style={{ marginTop: 20 }}>  
+      <form class="form">
+          <input
+            value={this.state.searchName}
+            name="searchName"
+            type="text"
+            placeholder="First Name, Last Name, or User Name"
+            onChange={event => this.handleInputChange (event)}
+          />
+        <button class="searchButton" onClick={this.handleFormSubmit}>Search</button>
+      </form>
+      </div>
+      
+      <div class="row" className="body">
+      <div class = "EmployeeTable">  
       <BootstrapTable 
       bootstrap4  
       striped  
       hover  
-      keyField='id'     
-      data = { this.state.employee }
+      keyField='id'
+      data = { this.state.filteredEmployee }
       columns={ this.state.columns } 
       filter={ filterFactory() } />  
-      </div>  
       </div>
-
+      </div>
+      </div>
     );
   }
 }
